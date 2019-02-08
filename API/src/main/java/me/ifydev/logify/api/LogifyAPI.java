@@ -3,6 +3,7 @@ package me.ifydev.logify.api;
 import lombok.Getter;
 import me.ifydev.logify.api.database.AbstractDatabaseHandler;
 import me.ifydev.logify.api.database.ConnectionInformation;
+import me.ifydev.logify.api.log.LoggerManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
@@ -15,6 +16,8 @@ import java.util.logging.Logger;
 public class LogifyAPI {
     @Getter private Logger logger;
     @Getter private AbstractDatabaseHandler database;
+
+    @Getter private LoggerManager loggerManager;
 
     private static LogifyAPI api;
 
@@ -32,6 +35,8 @@ public class LogifyAPI {
         }
         database.initialize();
         database.reload();
+
+        loggerManager = new LoggerManager(database);
     }
 
     public boolean initialized() {

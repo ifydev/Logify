@@ -6,7 +6,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -37,16 +36,6 @@ public class ConfigUtil {
             if (host == null || database == null || port == null || username == null || password == null) return Optional.empty();
             Optional<Integer> portNumber = isInt(port);
             return portNumber.map(integer -> new ConnectionInformation(handler.get(), host, database, integer, username, password, new HashMap<>()));
-        } else if (handler.get().equals(DatabaseType.SQLITE)) {
-            String file = configuration.getString("connection.file");
-            if (file == null) return Optional.empty();
-
-            Map<String, Object> sqliteMeta = new HashMap<>();
-            sqliteMeta.put("file", folder + "/" + file);
-
-            Map<String, Object> meta = new HashMap<>();
-            meta.put("sqlite", sqliteMeta);
-            return Optional.of(new ConnectionInformation(handler.get(), "", "", 0, "", "", meta));
         }
         return Optional.empty();
     }

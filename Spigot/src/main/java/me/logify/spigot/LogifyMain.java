@@ -2,7 +2,10 @@ package me.logify.spigot;
 
 import me.ifydev.logify.api.LogifyAPI;
 import me.ifydev.logify.api.database.ConnectionInformation;
+import me.logify.spigot.events.BlockEvents;
 import me.logify.spigot.util.ConfigUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -33,6 +36,9 @@ public class LogifyMain extends JavaPlugin {
         long timeTaken = System.currentTimeMillis() - start;
         long seconds = timeTaken / 1000;
         getLogger().info("Logify API initialized in " + seconds + "s (" + timeTaken + "ms)!");
+
+        registerEvents();
+        registerCommands();
     }
 
     @Override
@@ -57,5 +63,18 @@ public class LogifyMain extends JavaPlugin {
             e.printStackTrace();
 
         }
+    }
+
+    private void registerEvents() {
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(new BlockEvents(), this);
+    }
+
+    private void registerCommands() {
+
+    }
+
+    public static LogifyMain getInstance() {
+        return LogifyMain.getPlugin(LogifyMain.class);
     }
 }

@@ -14,7 +14,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Getter
 public enum DatabaseType {
-    MYSQL("mysql", SQLHandler.class), SQLITE("sqlite", SQLHandler.class);
+    MYSQL("mysql", SQLHandler.class);
 
     private String name;
     private Class<? extends AbstractDatabaseHandler> clazz;

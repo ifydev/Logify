@@ -2,6 +2,9 @@ package me.ifydev.logify.api.database;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.ifydev.logify.api.log.InteractionType;
+
+import java.util.UUID;
 
 /**
  * @author Innectic
@@ -15,4 +18,6 @@ public abstract class AbstractDatabaseHandler {
     public abstract void initialize();
     public abstract void reload();
     public abstract void drop();
+
+    public abstract void logBlockInteraction(InteractionType type, UUID player, int x, int y, int z, String world, String from, String to);
 }
