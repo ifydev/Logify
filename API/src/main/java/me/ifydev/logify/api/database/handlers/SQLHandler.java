@@ -1,9 +1,9 @@
-package me.logify.api.database.handlers;
+package me.ifydev.logify.api.database.handlers;
 
-import me.logify.api.LogifyAPI;
-import me.logify.api.database.AbstractDatabaseHandler;
-import me.logify.api.database.ConnectionError;
-import me.logify.api.database.ConnectionInformation;
+import me.ifydev.logify.api.LogifyAPI;
+import me.ifydev.logify.api.database.AbstractDatabaseHandler;
+import me.ifydev.logify.api.database.ConnectionInformation;
+import me.ifydev.logify.api.database.ConnectionError;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,7 +29,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
 
         if (connectionInformation.getMeta().containsKey("sqlite")) {
             type = "sqlite";
-            Map sqliteData = (Map) connectionInformation.getMeta().get("meta");
+            Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
             databaseURL = (String) sqliteData.get("file");
             isUsingSQLite = true;
         } else {

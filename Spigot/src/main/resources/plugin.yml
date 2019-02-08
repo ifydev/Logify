@@ -1,0 +1,5 @@
+
+name: Logify
+version: 1.0.0
+main: me.logify.spigot.LogifyMain
+author: Innectic

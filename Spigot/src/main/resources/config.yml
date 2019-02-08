@@ -1,0 +1,8 @@
+storage: sqlite
+connection:
+  host: localhost
+  port: 3306
+  database: logify
+  username: logify
+  password: magicalpassword
+  file: logify.db

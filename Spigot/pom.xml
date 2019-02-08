@@ -49,7 +49,7 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>me.innectic:LogifyAPI</include>
+                                    <include>me.ifydev:LogifyAPI</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

@@ -1,7 +1,7 @@
 package me.logify.spigot.util;
 
-import me.logify.api.database.ConnectionInformation;
-import me.logify.api.database.DatabaseType;
+import me.ifydev.logify.api.database.ConnectionInformation;
+import me.ifydev.logify.api.database.DatabaseType;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
