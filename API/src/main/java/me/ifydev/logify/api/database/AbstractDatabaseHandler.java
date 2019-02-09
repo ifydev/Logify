@@ -19,5 +19,5 @@ public abstract class AbstractDatabaseHandler {
     public abstract void reload();
     public abstract void drop();
 
-    public abstract void logBlockInteraction(InteractionType type, UUID player, int x, int y, int z, String world, String from, String to);
+    public abstract void logBlockInteraction(InteractionType type, UUID player, UUID event, int x, int y, int z, String world, String from, String to);
 }

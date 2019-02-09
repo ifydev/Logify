@@ -7,6 +7,6 @@ package me.ifydev.logify.api.log;
 public interface InteractionType {
 
     enum Block implements InteractionType {
-        BREAK, PLACE, BURN
+        BREAK, PLACE, BURN, EXPLODE
     }
 }

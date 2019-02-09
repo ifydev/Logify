@@ -60,7 +60,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
             database += ".";
 
             // Create the schema
-            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100) NOT NULL, x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100), event VARCHAR(100), x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
             statement.execute();
             statement.close();
 
@@ -82,20 +82,21 @@ public class SQLHandler extends AbstractDatabaseHandler {
     }
 
     @Override
-    public void logBlockInteraction(InteractionType type, UUID player, int x, int y, int z, String world, String from, String to) {
+    public void logBlockInteraction(InteractionType type, UUID player, UUID event, int x, int y, int z, String world, String from, String to) {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,x,y,z,world,`to`,`from`) VALUES (?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`to`,`from`) VALUES (?,?,?,?,?,?,?,?,?)");
             statement.setString(1, type.toString());
-            statement.setString(2, player.toString());
-            statement.setInt(3, x);
-            statement.setInt(4, y);
-            statement.setInt(5, z);
-            statement.setString(6, world);
-            statement.setString(7, to);
-            statement.setString(8, from);
+            statement.setString(2, player == null ? "" : player.toString());
+            statement.setString(3, event == null ? "" : event.toString());
+            statement.setInt(4, x);
+            statement.setInt(5, y);
+            statement.setInt(6, z);
+            statement.setString(7, world);
+            statement.setString(8, to);
+            statement.setString(9, from);
 
             statement.execute();
             statement.close();
