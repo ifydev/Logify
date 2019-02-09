@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
@@ -28,29 +29,31 @@ public class BlockEvents implements Listener {
                 .collect(Collectors.toList());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreakEvent(BlockBreakEvent e) {
+        String type = e.getBlock().getType().name();
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
             api.getLoggerManager().getBlockLogger().blockBreak(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                    location.getWorld().getName(), e.getBlock().getType().name(), "AIR");
+                    location.getWorld().getName(), type, "AIR");
         }));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockPlaceEvent(BlockPlaceEvent e) {
+        String type = e.getBlock().getType().name();
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
-            Location location = e.getBlock().getLocation();
+            Location location = e.getBlockPlaced().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
             api.getLoggerManager().getBlockLogger().blockPlace(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                    location.getWorld().getName(), "AIR", e.getBlock().getType().name());
+                    location.getWorld().getName(), "AIR", type);
         }));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockExplodeEvent(EntityExplodeEvent e) {
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getLocation();
@@ -60,7 +63,7 @@ public class BlockEvents implements Listener {
         }));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBurnEvent(BlockBurnEvent e) {
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();

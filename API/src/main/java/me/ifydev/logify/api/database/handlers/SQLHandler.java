@@ -87,7 +87,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`to`,`from`) VALUES (?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`from`,`to`) VALUES (?,?,?,?,?,?,?,?,?)");
             statement.setString(1, type.toString());
             statement.setString(2, player == null ? "" : player.toString());
             statement.setString(3, event == null ? "" : event.toString());
@@ -95,8 +95,8 @@ public class SQLHandler extends AbstractDatabaseHandler {
             statement.setInt(5, y);
             statement.setInt(6, z);
             statement.setString(7, world);
-            statement.setString(8, to);
-            statement.setString(9, from);
+            statement.setString(8, from);
+            statement.setString(9, to);
 
             statement.execute();
             statement.close();
