@@ -1,7 +1,9 @@
-package me.ifydev.logify.api.log;
+package me.ifydev.logify.api.log.modules;
 
 import lombok.RequiredArgsConstructor;
 import me.ifydev.logify.api.database.AbstractDatabaseHandler;
+import me.ifydev.logify.api.log.InteractionType;
+import me.ifydev.logify.api.structures.Location;
 
 import java.util.List;
 import java.util.UUID;

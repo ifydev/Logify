@@ -5,3 +5,10 @@ connection:
   database: logify
   username: logify
   password: magicalpassword
+
+modules:
+  block:
+    enabled: true
+    break: true
+    place: true
+    burn: true

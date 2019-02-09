@@ -22,13 +22,13 @@ public class LogifyMain extends JavaPlugin {
     public void onEnable() {
         createConfig();
 
-        Optional<ConnectionInformation> connectionInformation = ConfigUtil.getConnectionInformation(this.getDataFolder(), this.getConfig());
+        Optional<ConnectionInformation> connectionInformation = ConfigUtil.getConnectionInformation(getConfig());
         if (!connectionInformation.isPresent()) {
             getLogger().severe("Could not get connection information from configuration!");
             return;
         }
         long start = System.currentTimeMillis();
-        LogifyAPI api = new LogifyAPI(connectionInformation.get(), this.getLogger());
+        LogifyAPI api = new LogifyAPI(connectionInformation.get(), ConfigUtil.getModuleConfiguraton("block", getConfig()), getLogger());
         if (!api.initialized()) {
             getLogger().severe("Could not initialize database connection");
             return;

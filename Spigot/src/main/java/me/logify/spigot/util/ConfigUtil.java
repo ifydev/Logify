@@ -2,10 +2,12 @@ package me.logify.spigot.util;
 
 import me.ifydev.logify.api.database.ConnectionInformation;
 import me.ifydev.logify.api.database.DatabaseType;
+import me.ifydev.logify.api.log.ModuleConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -22,7 +24,7 @@ public class ConfigUtil {
         }
     }
 
-    public static Optional<ConnectionInformation> getConnectionInformation(File folder, FileConfiguration configuration) {
+    public static Optional<ConnectionInformation> getConnectionInformation(FileConfiguration configuration) {
         Optional<DatabaseType> handler = DatabaseType.findType(configuration.getString("storage", "sqlite"));
         if (!handler.isPresent()) return Optional.empty();
 
@@ -38,5 +40,18 @@ public class ConfigUtil {
             return portNumber.map(integer -> new ConnectionInformation(handler.get(), host, database, integer, username, password, new HashMap<>()));
         }
         return Optional.empty();
+    }
+
+    public static ModuleConfiguration getModuleConfiguraton(String module, FileConfiguration config) {
+        ConfigurationSection section = config.getConfigurationSection("modules." + module);
+
+        boolean enabled = section.getBoolean("enabled", false);
+        Map<String, Boolean> subModules = new HashMap<>();
+
+        section.getKeys(false).stream().filter(key -> !key.equalsIgnoreCase("enabled")).forEach(key -> {
+            boolean value = section.getBoolean(key, false);
+            subModules.put(key, value);
+        });
+        return new ModuleConfiguration(enabled, subModules);
     }
 }

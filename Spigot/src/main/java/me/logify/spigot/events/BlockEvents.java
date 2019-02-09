@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  */
 public class BlockEvents implements Listener {
 
-    private List<me.ifydev.logify.api.log.Location> getLocations(List<Block> blocks) {
-        return blocks.stream().map(b -> new me.ifydev.logify.api.log.Location(
+    private List<me.ifydev.logify.api.structures.Location> getLocations(List<Block> blocks) {
+        return blocks.stream().map(b -> new me.ifydev.logify.api.structures.Location(
                     b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ(), b.getType().name()))
                 .collect(Collectors.toList());
     }
@@ -36,8 +36,9 @@ public class BlockEvents implements Listener {
             Location location = e.getBlock().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
-            api.getLoggerManager().getBlockLogger().blockBreak(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                    location.getWorld().getName(), type, "AIR");
+            api.getLoggerManager().getBlockLogger().ifPresent(m ->
+                    m.blockBreak(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
+                            location.getWorld().getName(), type, "AIR"));
         }));
     }
 
@@ -48,8 +49,9 @@ public class BlockEvents implements Listener {
             Location location = e.getBlockPlaced().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
-            api.getLoggerManager().getBlockLogger().blockPlace(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                    location.getWorld().getName(), "AIR", type);
+            api.getLoggerManager().getBlockLogger().ifPresent(m ->
+                    m.blockPlace(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
+                            location.getWorld().getName(), "AIR", type));
         }));
     }
 
@@ -59,7 +61,8 @@ public class BlockEvents implements Listener {
             Location location = e.getLocation();
             UUID eventId = UUID.randomUUID();
 
-            api.getLoggerManager().getBlockLogger().regionExplode(null, eventId, location.getWorld().getName(), getLocations(e.blockList()), "AIR");
+            api.getLoggerManager().getBlockLogger().ifPresent(m ->
+                    m.regionExplode(null, eventId, location.getWorld().getName(), getLocations(e.blockList()), "AIR"));
         }));
     }
 
@@ -68,8 +71,8 @@ public class BlockEvents implements Listener {
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();
 
-            api.getLoggerManager().getBlockLogger().blockBurn(null, location.getBlockX(), location.getBlockY(),
-                    location.getBlockZ(), location.getWorld().getName(), e.getBlock().getType().name(), "AIR");
+            api.getLoggerManager().getBlockLogger().ifPresent(m -> m.blockBurn(null, location.getBlockX(), location.getBlockY(),
+                    location.getBlockZ(), location.getWorld().getName(), e.getBlock().getType().name(), "AIR"));
         }));
     }
 }

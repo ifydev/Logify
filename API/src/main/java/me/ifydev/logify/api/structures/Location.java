@@ -1,4 +1,4 @@
-package me.ifydev.logify.api.log;
+package me.ifydev.logify.api.structures;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
