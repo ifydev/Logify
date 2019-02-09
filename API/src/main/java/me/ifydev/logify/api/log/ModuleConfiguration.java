@@ -18,8 +18,4 @@ public class ModuleConfiguration {
     public boolean isSubModuleEnabled(String module) {
         return moduleStatus.getOrDefault(module, false);
     }
-
-    public void setModuleStatus(String module, boolean status) {
-        moduleStatus.put(module, status);
-    }
 }

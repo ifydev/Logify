@@ -12,3 +12,4 @@ modules:
     break: true
     place: true
     burn: true
+    explode: true

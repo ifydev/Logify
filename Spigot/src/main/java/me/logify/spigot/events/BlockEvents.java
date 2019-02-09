@@ -29,8 +29,10 @@ public class BlockEvents implements Listener {
                 .collect(Collectors.toList());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBreakEvent(BlockBreakEvent e) {
+        if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("break")).orElse(false)) return;
+
         String type = e.getBlock().getType().name();
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();
@@ -44,6 +46,8 @@ public class BlockEvents implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockPlaceEvent(BlockPlaceEvent e) {
+        if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("place")).orElse(false)) return;
+
         String type = e.getBlock().getType().name();
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlockPlaced().getLocation();
@@ -57,6 +61,8 @@ public class BlockEvents implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockExplodeEvent(EntityExplodeEvent e) {
+        if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("explode")).orElse(false)) return;
+
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getLocation();
             UUID eventId = UUID.randomUUID();
@@ -68,6 +74,8 @@ public class BlockEvents implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBurnEvent(BlockBurnEvent e) {
+        if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("burn")).orElse(false)) return;
+
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();
 
