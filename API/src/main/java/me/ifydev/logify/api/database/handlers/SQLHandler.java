@@ -5,11 +5,13 @@ import me.ifydev.logify.api.database.AbstractDatabaseHandler;
 import me.ifydev.logify.api.database.ConnectionError;
 import me.ifydev.logify.api.database.ConnectionInformation;
 import me.ifydev.logify.api.log.InteractionType;
+import me.ifydev.logify.api.structures.Interaction;
+import me.ifydev.logify.api.structures.Location;
+import me.ifydev.logify.api.structures.TimeObject;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -127,5 +129,45 @@ public class SQLHandler extends AbstractDatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<Interaction> getRecentInteraction(Optional<InteractionType> type, Optional<TimeObject> time, Optional<UUID> player, int x, int y, int z, String world) {
+        List<Interaction> interactions = new ArrayList<>();
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return interactions;
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM blockChanges WHERE x=? AND y=? AND z=? AND world=? AND `when`>=?");
+            statement.setInt(1, x);
+            statement.setInt(2, y);
+            statement.setInt(3, z);
+            statement.setString(4, world);
+            statement.setLong(5, ((System.currentTimeMillis() / 1000) - time.map(TimeObject::toSeconds).orElse(300L)));
+
+            ResultSet results = statement.executeQuery();
+
+            while (results.next()) {
+                String databasePlayer = results.getString("player");
+                // If we were given a player, and they don't match, we don't care about this entry
+                if (!databasePlayer.equals("") && player.isPresent() && !databasePlayer.equals(player.get().toString())) continue;
+
+                Location location = new Location(results.getInt("x"), results.getInt("y"), results.getInt("z"),
+                        results.getString("to"));
+                Optional<InteractionType.Block> interactionType = InteractionType.Block.getType(results.getString("type"));
+                if (!interactionType.isPresent()) continue;
+
+                Interaction interaction = new Interaction(location, interactionType.get(), results.getLong("when"));
+                interactions.add(interaction);
+            }
+
+            results.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return interactions;
     }
 }

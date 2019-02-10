@@ -2,6 +2,7 @@ package me.logify.spigot;
 
 import me.ifydev.logify.api.LogifyAPI;
 import me.ifydev.logify.api.database.ConnectionInformation;
+import me.logify.spigot.commands.TestCommand;
 import me.logify.spigot.events.BlockEvents;
 import me.logify.spigot.events.PlayerEvents;
 import me.logify.spigot.util.ConfigUtil;
@@ -74,7 +75,7 @@ public class LogifyMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-
+        getCommand("test").setExecutor(new TestCommand());
     }
 
     public static LogifyMain getInstance() {
