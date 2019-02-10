@@ -64,6 +64,10 @@ public class SQLHandler extends AbstractDatabaseHandler {
             statement.execute();
             statement.close();
 
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "players (type VARCHAR(100) NOT NULL, player VARCHAR(100))");
+            statement.execute();
+            statement.close();
+
             connection.close();
         } catch (SQLException e) {
             LogifyAPI.get().ifPresent(api -> api.getLogger().severe(ConnectionError.DATABASE_EXCEPTION.getDisplay()));
@@ -97,6 +101,25 @@ public class SQLHandler extends AbstractDatabaseHandler {
             statement.setString(7, world);
             statement.setString(8, from);
             statement.setString(9, to);
+
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void logPlayerInteraction(InteractionType type, UUID player) {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return;
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO players (type,player) VALUES (?,?)");
+
+            statement.setString(1, type.toString());
+            statement.setString(2, player.toString());
 
             statement.execute();
             statement.close();

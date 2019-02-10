@@ -16,6 +16,6 @@ public class ModuleConfiguration {
     private Map<String, Boolean> moduleStatus;
 
     public boolean isSubModuleEnabled(String module) {
-        return moduleStatus.getOrDefault(module, false);
+        return moduleEnabled ? moduleStatus.getOrDefault(module, false) : false;
     }
 }

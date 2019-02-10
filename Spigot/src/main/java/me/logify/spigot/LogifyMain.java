@@ -3,6 +3,7 @@ package me.logify.spigot;
 import me.ifydev.logify.api.LogifyAPI;
 import me.ifydev.logify.api.database.ConnectionInformation;
 import me.logify.spigot.events.BlockEvents;
+import me.logify.spigot.events.PlayerEvents;
 import me.logify.spigot.util.ConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -28,14 +29,15 @@ public class LogifyMain extends JavaPlugin {
             return;
         }
         long start = System.currentTimeMillis();
-        LogifyAPI api = new LogifyAPI(connectionInformation.get(), ConfigUtil.getModuleConfiguraton("block", getConfig()), getLogger());
+        LogifyAPI api = new LogifyAPI(connectionInformation.get(),
+                ConfigUtil.getModuleConfiguraton("block", getConfig()),
+                ConfigUtil.getModuleConfiguraton("player", getConfig()), getLogger());
         if (!api.initialized()) {
             getLogger().severe("Could not initialize database connection");
             return;
         }
         long timeTaken = System.currentTimeMillis() - start;
-        long seconds = timeTaken / 1000;
-        getLogger().info("Logify API initialized in " + seconds + "s (" + timeTaken + "ms)!");
+        getLogger().info("Logify API initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + "ms)!");
 
         registerEvents();
         registerCommands();
@@ -68,6 +70,7 @@ public class LogifyMain extends JavaPlugin {
     private void registerEvents() {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new BlockEvents(), this);
+        pm.registerEvents(new PlayerEvents(), this);
     }
 
     private void registerCommands() {

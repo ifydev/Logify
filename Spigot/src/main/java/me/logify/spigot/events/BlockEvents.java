@@ -1,9 +1,11 @@
 package me.logify.spigot.events;
 
 import me.ifydev.logify.api.LogifyAPI;
+import me.ifydev.logify.api.log.InteractionType;
 import me.logify.spigot.LogifyMain;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,9 +40,8 @@ public class BlockEvents implements Listener {
             Location location = e.getBlock().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
-            api.getLoggerManager().getBlockLogger().ifPresent(m ->
-                    m.blockBreak(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                            location.getWorld().getName(), type, "AIR"));
+            api.getDatabase().logBlockInteraction(InteractionType.Block.BREAK, player, null,
+                    location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName(), type, Material.AIR.name());
         }));
     }
 
@@ -53,9 +54,8 @@ public class BlockEvents implements Listener {
             Location location = e.getBlockPlaced().getLocation();
             UUID player = e.getPlayer().getUniqueId();
 
-            api.getLoggerManager().getBlockLogger().ifPresent(m ->
-                    m.blockPlace(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                            location.getWorld().getName(), "AIR", type));
+            api.getDatabase().logBlockInteraction(InteractionType.Block.PLACE, player, null,
+                    location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName(), Material.AIR.name(), type);
         }));
     }
 
@@ -63,24 +63,26 @@ public class BlockEvents implements Listener {
     public void onBlockExplodeEvent(EntityExplodeEvent e) {
         if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("explode")).orElse(false)) return;
 
-        Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
-            Location location = e.getLocation();
-            UUID eventId = UUID.randomUUID();
+        List<me.ifydev.logify.api.structures.Location> locations = getLocations(e.blockList());
+        Location location = e.getLocation();
 
-            api.getLoggerManager().getBlockLogger().ifPresent(m ->
-                    m.regionExplode(null, eventId, location.getWorld().getName(), getLocations(e.blockList()), "AIR"));
+        Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
+            UUID event = UUID.randomUUID();
+            locations.forEach(l -> api.getDatabase().logBlockInteraction(InteractionType.Block.EXPLODE, null, event,
+                    l.getX(), l.getY(), l.getZ(), location.getWorld().getName(), l.getMaterial(), "AIR"));
         }));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBurnEvent(BlockBurnEvent e) {
+        String type = e.getBlock().getType().name();
         if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("burn")).orElse(false)) return;
 
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlock().getLocation();
 
-            api.getLoggerManager().getBlockLogger().ifPresent(m -> m.blockBurn(null, location.getBlockX(), location.getBlockY(),
-                    location.getBlockZ(), location.getWorld().getName(), e.getBlock().getType().name(), "AIR"));
+            api.getDatabase().logBlockInteraction(InteractionType.Block.BURN, null, null,
+                    location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName(), Material.AIR.name(), type);
         }));
     }
 }

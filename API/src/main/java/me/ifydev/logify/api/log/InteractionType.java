@@ -9,4 +9,8 @@ public interface InteractionType {
     enum Block implements InteractionType {
         BREAK, PLACE, BURN, EXPLODE
     }
+
+    enum Player implements InteractionType {
+        JOIN, LEAVE
+    }
 }

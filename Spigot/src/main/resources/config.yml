@@ -13,3 +13,7 @@ modules:
     place: true
     burn: true
     explode: true
+  player:
+    enabled: true
+    join: true
+    leave: true
