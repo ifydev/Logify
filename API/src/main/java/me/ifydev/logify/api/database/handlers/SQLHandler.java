@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,14 +56,13 @@ public class SQLHandler extends AbstractDatabaseHandler {
 
             statement.execute();
             statement.close();
-            database += ".";
 
             // Create the schema
-            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100), event VARCHAR(100), x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100), `when` BIGINT NOT NULL, event VARCHAR(100), x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
             statement.execute();
             statement.close();
 
-            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "players (type VARCHAR(100) NOT NULL, player VARCHAR(100))");
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".players (type VARCHAR(100) NOT NULL, player VARCHAR(100), `when` BIGINT NOT NULL)");
             statement.execute();
             statement.close();
 
@@ -91,7 +89,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`from`,`to`) VALUES (?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`from`,`to`,`when`) VALUES (?,?,?,?,?,?,?,?,?,?)");
             statement.setString(1, type.toString());
             statement.setString(2, player == null ? "" : player.toString());
             statement.setString(3, event == null ? "" : event.toString());
@@ -101,6 +99,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
             statement.setString(7, world);
             statement.setString(8, from);
             statement.setString(9, to);
+            statement.setLong(10, (System.currentTimeMillis() / 1000));
 
             statement.execute();
             statement.close();
@@ -116,10 +115,11 @@ public class SQLHandler extends AbstractDatabaseHandler {
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO players (type,player) VALUES (?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO players (type,player,`when`) VALUES (?,?,?)");
 
             statement.setString(1, type.toString());
             statement.setString(2, player.toString());
+            statement.setLong(3, (System.currentTimeMillis() / 1000));
 
             statement.execute();
             statement.close();
