@@ -27,7 +27,8 @@ public class BlockEvents implements Listener {
 
     private List<me.ifydev.logify.api.structures.Location> getLocations(List<Block> blocks) {
         return blocks.stream().map(b -> new me.ifydev.logify.api.structures.Location(
-                    b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ(), b.getType().name()))
+                b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ(),
+                b.getLocation().getWorld().getName(), b.getType().name()))
                 .collect(Collectors.toList());
     }
 

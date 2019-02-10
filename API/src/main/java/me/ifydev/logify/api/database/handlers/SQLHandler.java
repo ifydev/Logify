@@ -152,11 +152,11 @@ public class SQLHandler extends AbstractDatabaseHandler {
                 String databasePlayer = results.getString("player");
                 // If we were given a player, and they don't match, we don't care about this entry
                 if (!databasePlayer.equals("") && player.isPresent() && !databasePlayer.equals(player.get().toString())) continue;
-
-                Location location = new Location(results.getInt("x"), results.getInt("y"), results.getInt("z"),
-                        results.getString("to"));
                 Optional<InteractionType.Block> interactionType = InteractionType.Block.getType(results.getString("type"));
-                if (!interactionType.isPresent()) continue;
+                if (type.isPresent() && interactionType.isPresent() && !type.get().equals(interactionType.get())) continue;
+
+                Location location = new Location(results.getInt("x"), results.getInt("y"), results.getInt("z"), results.getString("world"),
+                        results.getString("to"));
 
                 Interaction interaction = new Interaction(location, interactionType.get(), results.getLong("when"));
                 interactions.add(interaction);
