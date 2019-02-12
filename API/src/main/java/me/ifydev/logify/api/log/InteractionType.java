@@ -1,5 +1,8 @@
 package me.ifydev.logify.api.log;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 02/07/2019
@@ -7,7 +10,11 @@ package me.ifydev.logify.api.log;
 public interface InteractionType {
 
     enum Block implements InteractionType {
-        BREAK, PLACE, BURN, EXPLODE
+        BREAK, PLACE, BURN, EXPLODE;
+
+        public static Optional<Block> getType(String type) {
+            return Arrays.stream(values()).filter(t -> t.name().equalsIgnoreCase(type)).findFirst();
+        }
     }
 
     enum Player implements InteractionType {

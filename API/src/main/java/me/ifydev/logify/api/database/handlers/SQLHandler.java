@@ -5,12 +5,13 @@ import me.ifydev.logify.api.database.AbstractDatabaseHandler;
 import me.ifydev.logify.api.database.ConnectionError;
 import me.ifydev.logify.api.database.ConnectionInformation;
 import me.ifydev.logify.api.log.InteractionType;
+import me.ifydev.logify.api.structures.Interaction;
+import me.ifydev.logify.api.structures.Location;
+import me.ifydev.logify.api.structures.TimeObject;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Map;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,14 +58,13 @@ public class SQLHandler extends AbstractDatabaseHandler {
 
             statement.execute();
             statement.close();
-            database += ".";
 
             // Create the schema
-            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100), event VARCHAR(100), x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".blockChanges (type VARCHAR(100) NOT NULL, player VARCHAR(100), `when` BIGINT NOT NULL, event VARCHAR(100), x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, world VARCHAR(100) NOT NULL, `to` VARCHAR(100) NOT NULL, `from` VARCHAR(100) NOT NULL)");
             statement.execute();
             statement.close();
 
-            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "players (type VARCHAR(100) NOT NULL, player VARCHAR(100))");
+            statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".players (type VARCHAR(100) NOT NULL, player VARCHAR(100), `when` BIGINT NOT NULL)");
             statement.execute();
             statement.close();
 
@@ -91,7 +91,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`from`,`to`) VALUES (?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO blockChanges (type,player,event,x,y,z,world,`from`,`to`,`when`) VALUES (?,?,?,?,?,?,?,?,?,?)");
             statement.setString(1, type.toString());
             statement.setString(2, player == null ? "" : player.toString());
             statement.setString(3, event == null ? "" : event.toString());
@@ -101,6 +101,7 @@ public class SQLHandler extends AbstractDatabaseHandler {
             statement.setString(7, world);
             statement.setString(8, from);
             statement.setString(9, to);
+            statement.setLong(10, (System.currentTimeMillis() / 1000));
 
             statement.execute();
             statement.close();
@@ -116,10 +117,11 @@ public class SQLHandler extends AbstractDatabaseHandler {
         if (!connection.isPresent()) return;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO players (type,player) VALUES (?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO players (type,player,`when`) VALUES (?,?,?)");
 
             statement.setString(1, type.toString());
             statement.setString(2, player.toString());
+            statement.setLong(3, (System.currentTimeMillis() / 1000));
 
             statement.execute();
             statement.close();
@@ -127,5 +129,97 @@ public class SQLHandler extends AbstractDatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<Interaction> getRecentInteraction(Optional<InteractionType> type, Optional<TimeObject> time, Optional<UUID> player, int x, int y, int z, String world) {
+        List<Interaction> interactions = new ArrayList<>();
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return interactions;
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM blockChanges WHERE x=? AND y=? AND z=? AND world=? AND `when`>=?");
+            statement.setInt(1, x);
+            statement.setInt(2, y);
+            statement.setInt(3, z);
+            statement.setString(4, world);
+            statement.setLong(5, ((System.currentTimeMillis() / 1000) - time.map(TimeObject::toSeconds).orElse(300L)));
+
+            ResultSet result = statement.executeQuery();
+            interactions = resultsToInteractions(player, type, result);
+
+            result.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return interactions;
+    }
+
+    @Override
+    public List<Interaction> getRecentInteractionsInRegion(Optional<InteractionType> type, Optional<TimeObject> time, Optional<UUID> player, Location first, Location second) {
+        List<Interaction> interactions = new ArrayList<>();
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return interactions;
+
+        int x1 = Math.max(first.getX(), second.getX());
+        int y1 = Math.max(first.getY(), second.getY());
+        int z1 = Math.max(first.getZ(), second.getZ());
+
+        int x2 = Math.min(first.getX(), second.getX());
+        int y2 = Math.min(first.getY(), second.getY());
+        int z2 = Math.min(first.getZ(), second.getZ());
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM blockChanges WHERE x <= ? AND x >= ? AND y <= ? AND y >= ? AND z <= ? AND z >= ? AND world=? AND `when`>=?");
+
+            statement.setInt(1, x1);
+            statement.setInt(2, x2);
+            statement.setInt(3, y1);
+            statement.setInt(4, y2);
+            statement.setInt(5, z1);
+            statement.setInt(6, z2);
+            statement.setString(7, first.getWorld());
+            statement.setLong(8, ((System.currentTimeMillis() / 1000) - time.map(TimeObject::toSeconds).orElse(300L)));
+
+            ResultSet result = statement.executeQuery();
+            interactions = resultsToInteractions(player, type, result);
+
+            result.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return interactions;
+    }
+
+    private List<Interaction> resultsToInteractions(Optional<UUID> player, Optional<InteractionType> type, ResultSet result) {
+        List<Interaction> interactions = new ArrayList<>();
+        try {
+            while (result.next()) {
+                String databasePlayer = result.getString("player");
+                // If we were given a player, and they don't match, we don't care about this entry
+                if (!databasePlayer.equals("") && player.isPresent() && !databasePlayer.equals(player.get().toString()))
+                    continue;
+                Optional<InteractionType.Block> interactionType = InteractionType.Block.getType(result.getString("type"));
+                if (!interactionType.isPresent()) continue;
+                if (type.isPresent() && !type.get().equals(interactionType.get())) continue;
+
+                Location location = new Location(result.getInt("x"), result.getInt("y"), result.getInt("z"), result.getString("world"),
+                        Optional.of(result.getString("to")));
+
+                Interaction interaction = new Interaction(location, interactionType.get(), result.getLong("when"));
+                interactions.add(interaction);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return interactions;
+        }
+        return interactions;
     }
 }

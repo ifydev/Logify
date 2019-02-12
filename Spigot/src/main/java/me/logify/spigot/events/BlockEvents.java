@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,8 @@ public class BlockEvents implements Listener {
 
     private List<me.ifydev.logify.api.structures.Location> getLocations(List<Block> blocks) {
         return blocks.stream().map(b -> new me.ifydev.logify.api.structures.Location(
-                    b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ(), b.getType().name()))
+                b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ(),
+                b.getLocation().getWorld().getName(), Optional.of(b.getType().name())))
                 .collect(Collectors.toList());
     }
 
@@ -50,6 +52,7 @@ public class BlockEvents implements Listener {
         if (!LogifyAPI.get().map(api -> api.getBlockModuleConfig().isSubModuleEnabled("place")).orElse(false)) return;
 
         String type = e.getBlock().getType().name();
+
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             Location location = e.getBlockPlaced().getLocation();
             UUID player = e.getPlayer().getUniqueId();
@@ -69,7 +72,7 @@ public class BlockEvents implements Listener {
         Bukkit.getScheduler().runTaskAsynchronously(LogifyMain.getInstance(), () -> LogifyAPI.get().ifPresent(api -> {
             UUID event = UUID.randomUUID();
             locations.forEach(l -> api.getDatabase().logBlockInteraction(InteractionType.Block.EXPLODE, null, event,
-                    l.getX(), l.getY(), l.getZ(), location.getWorld().getName(), l.getMaterial(), "AIR"));
+                    l.getX(), l.getY(), l.getZ(), location.getWorld().getName(), l.getMaterial().orElse(Material.AIR.name()), "AIR"));
         }));
     }
 
