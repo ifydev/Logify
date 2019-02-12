@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 02/08/2019
@@ -18,5 +20,5 @@ public class Location {
     private int y;
     private int z;
     private String world;
-    private String material;
+    private Optional<String> material;
 }

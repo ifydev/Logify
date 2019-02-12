@@ -20,6 +20,6 @@ public class RevertManager {
     public void revertInteraction(Interaction interaction) {
         Location location = new Location(Bukkit.getWorld(interaction.getLocation().getWorld()), interaction.getLocation().getX(), interaction.getLocation().getY(),
                 interaction.getLocation().getZ());
-        location.getWorld().getBlockAt(location).setType(Material.getMaterial(interaction.getLocation().getMaterial()));
+        location.getWorld().getBlockAt(location).setType(Material.getMaterial(interaction.getLocation().getMaterial().orElse("AIR")));
     }
 }
